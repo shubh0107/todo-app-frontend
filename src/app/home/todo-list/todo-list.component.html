@@ -6,11 +6,11 @@
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="newTodoForm">
-          <form (ngSubmit)="addNewTodo(newTodo)" #newTodoForm="ngForm">
+        <div class="newTodoForm" *ngIf="!apiMessage">
+          <form (ngSubmit)="addNewTodo(newTodoForm)" #newTodoForm="ngForm">
             <div class="form-group">
               <label for="title">Title:</label>
-              <input type="text" [(ngModel)]="newTodo.title"
+              <input type="text" ngModel
                      class="form-control" #newTodoTitle="ngModel"
                      name="title" id="title" required>
               <div [hidden]="newTodoTitle.valid || newTodoTitle.pristine"
@@ -20,10 +20,8 @@
             </div>
             <div class="form-group">
               <label for="description">Description:</label>
-              <textarea rows="4" [(ngModel)]="newTodo.description"
-                     class="form-control" #newTodoDesc="ngModel"
-                     name="description" id="description" required>
-              </textarea>
+              <input ngModel class="form-control" #newTodoDesc="ngModel"
+                     name="description" id="description" required/>
               <div [hidden]="newTodoDesc.valid || newTodoDesc.pristine"
                    class="alert alert-danger">
                 Description is required
@@ -36,12 +34,17 @@
               Submit
             </button>
           </form>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-
         </div>
+
+        <div style="margin:10px;" *ngIf="apiMessage" align="center" class="alert alert-success" role="alert">
+          <strong>{{apiMessage}}</strong>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+
+
       </div>
     </div>
   </div>
@@ -55,11 +58,12 @@
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
-        <div align="center" class="EditTodoBox">
-          <form (ngSubmit)="editTodo(editedTodo)" #editTodoForm="ngForm">
+        <div align="center" class="EditTodoBox" *ngIf="!apiMessage">
+          <form (ngSubmit)="editTodo(editTodoForm)" #editTodoForm="ngForm">
             <div class="form-group">
-              <label for="todoText">Todo:</label>
-              <input type="text" [(ngModel)]="editedTodo.title" #editedTodoTitle="ngModel" class="form-control" name="todoText" id="todoText" required />
+              <label for="todoTitle">Todo:</label>
+              <input type="text" [ngModel]="editedTodo.title" #editedTodoTitle="ngModel" class="form-control"
+                     name="todoTitle" id="todoTitle" required/>
               <div [hidden]="editedTodoTitle.valid || editedTodoTitle.pristine"
                    class="alert alert-danger">
                 Todo is required
@@ -67,17 +71,20 @@
             </div>
             <div class="form-group">
               <label for="todoDesc">Description:</label>
-              <textarea rows="4" class="form-control" [(ngModel)]="editedTodo.description" #editedTodoDesc="ngModel" name="todoDesc" id="todoDesc" required></textarea>
+              <input type="text" [ngModel]="editedTodo.description" #editedTodoDesc="ngModel"
+                     class="form-control" name="todoDesc" id="todoDesc" required/>
               <div [hidden]="editedTodoDesc.valid || editedTodoDesc.pristine"
                    class="alert alert-danger">
                 Description is required
               </div>
             </div>
-            <button type="submit" [disabled]="!editTodoForm.form.valid || !editTodoForm.form.dirty" class="btn btn-success btn-block">Submit</button>
+            <button type="submit" [disabled]="!editTodoForm.form.valid || !editTodoForm.form.dirty"
+                    class="btn btn-success btn-block">Submit
+            </button>
           </form>
-          <!--<div style="margin:10px;" *ngIf="apiMessage" align="center" class="alert alert-success" role="alert">
-            <strong>{{apiMessage}}</strong>
-          </div>-->
+        </div>
+        <div style="margin:10px;" *ngIf="apiMessage" align="center" class="alert alert-success" role="alert">
+          <strong>{{apiMessage}}</strong>
         </div>
       </div>
       <div class="modal-footer">
@@ -87,52 +94,92 @@
   </div>
 </div>
 
+<div class="modal fade" id="deleteTodo" role="dialog">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Delete Todo</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
 
-<button class="btn btn-primary btn-md" id="newTodoBtn"
-        data-toggle="modal"
-        data-target="#newTodo">
-  New Todo
-</button>
+        <div *ngIf="!apiMessage" align="center" class="alert alert-danger" role="alert">
+          <p>Are you sure want to delete this todo?</p>
+          <strong>{{todoToDelete.title}}</strong>
+        </div>
 
-<table class="table table bordered table-striped">
+        <div style="margin:10px;" *ngIf="apiMessage" align="center" class="alert alert-success" role="alert">
+          <strong>{{todoToDelete.title}}</strong> {{apiMessage}}
+        </div>
 
-  <thead>
-  <th>Title</th>
-  <th>View</th>
-  <th>Edit</th>
-  <th>Delete</th>
-  </thead>
+      </div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-danger"
+                *ngIf="!apiMessage"
+                (click)="deleteTodo(todoToDelete)">
+          Confirm
+        </button>
+        <button type="button"
+                class="btn btn-default"
+                data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <tbody>
 
-  <tr *ngFor="let todo of todos">
-    <td>{{todo.title}}</td>
-    <td>{{todo.description}}</td>
-    <td>
-      <p>
-        <button class="btn btn-primary btn-xs"
+<div class="container">
+
+  <button class="btn btn-primary btn-md" id="newTodoBtn"
+          (click)="showAddNewTodoForm()"
+          data-toggle="modal"
+          data-target="#newTodo">
+    New Todo
+  </button>
+
+
+  <table class="table table-striped table-bordered" style="width: 1100px; margin-top: 20px;">
+
+    <thead align="center">
+    <th >Title</th>
+    <th>Description</th>
+    <th>Edit</th>
+    <th>Delete</th>
+    </thead>
+
+    <tbody>
+    <tr *ngFor="let todo of todos">
+      <td>{{todo.title}}</td>
+      <td>{{todo.description}}</td>
+      <td align="center">
+        <p>
+          <button class="btn btn-primary btn-xs"
                   (click)="showEditForm(todo)"
                   data-title="Edit"
                   data-toggle="modal"
                   data-target="#editTodo">
-          <span class="fas fa-pencil-alt"></span>
-        </button>
-      </p>
-    </td>
-    <td>
-      <p>
-        <button class="btn btn-danger btn-xs"
-                data-title="Delete"
-                data-toggle="modal"
-                data-target="#delete" >
-          <span class="fas fa-trash-alt"></span>
-        </button>
-      </p>
-    </td>
+            <span class="fas fa-pencil-alt"></span>
+          </button>
+        </p>
+      </td>
+      <td align="center">
+        <p>
+          <button class="btn btn-danger btn-xs"
+                  (click)="showDeleteTodo(todo)"
+                  data-title="Delete"
+                  data-toggle="modal"
+                  data-target="#deleteTodo">
+            <span class="fas fa-trash-alt"></span>
+          </button>
+        </p>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
 
-  </tr>
 
 
-  </tbody>
-
-</table>

@@ -11,12 +11,17 @@ export class TodoService {
     return this.http.get(this.apiUrl);
   }
 
-  createTodo(newTodo: Todo) {
+  createTodo(newTodo) {
     console.log('Here in todo service-')
     return this.http.post(this.apiUrl , newTodo);
   }
 
-  updateTodo(newTodo: Todo) {
+  updateTodo(newTodo) {
     return this.http.put(this.apiUrl, newTodo);
+  }
+
+  deleteTodo(id: String) {
+    console.log('In deleteTodo of services. id-' + id);
+    return this.http.delete(this.apiUrl + '/' + id);
   }
 }

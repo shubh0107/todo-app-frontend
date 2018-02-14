@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import { Todo } from '../../models/todo';
 import {TodoService} from '../todo.service';
+import {NgForm} from '@angular/forms';
 
 
 
@@ -11,15 +12,21 @@ import {TodoService} from '../todo.service';
 })
 export class TodoListComponent implements OnInit {
   todos: Todo[];
-  newTodo = {
+  /*newTodo = {
     title: '',
     description: ''
-  };
+  };*/
   editedTodo = new Todo('', '', '');
+  todoToDelete = new Todo('', '', '');
+  apiMessage: String;
 
   constructor(private todoService: TodoService) { }
 
   ngOnInit() {
+    this.getTodos();
+  }
+
+  getTodos() {
     this.todoService.getTodos().subscribe(
       (response) => {
         if (response.json().success) {
@@ -31,27 +38,51 @@ export class TodoListComponent implements OnInit {
     );
   }
 
-  showEditForm(todo: Todo) {
-    this.editedTodo = todo;
+  showAddNewTodoForm() {
+    this.apiMessage = '';
   }
 
-  addNewTodo(newTodo: Todo) {
-    console.log('Here!');
-    this.todoService.createTodo(newTodo).subscribe(
+  showEditForm(todo: Todo) {
+    this.editedTodo = todo;
+    this.apiMessage = '';
+  }
+
+  showDeleteTodo(todo: Todo) {
+    this.todoToDelete = todo;
+    this.apiMessage = '';
+  }
+
+  addNewTodo(form: NgForm) {
+    const todo = {
+      title : form.value.title,
+      description : form.value.description
+    };
+    this.todoService.createTodo(todo).subscribe(
       (response) => {
         if (response.json().success) {
           this.todos.push(response.json().data);
+          this.apiMessage = response.json().message;
         }
       }
     );
   }
 
-  editTodo(todo: Todo) {
-    if (!todo) { return; }
-    todo._id = this.editedTodo._id;
+  editTodo(form: NgForm) {
+    console.log('here');
+
+    const todo = {
+      title : form.value.todoTitle,
+      description : form.value.todoDesc,
+      _id : this.editedTodo._id
+    };
+    console.log(todo);
+   // if (!todo) { return; }
+  //  this.editedTodo._id = this.editedTodo._id;
     this.todoService.updateTodo(todo).subscribe(
       (response) => {
-        const updatedTodo = response.json().data;
+        this.apiMessage = response.json().message;
+        this.getTodos();
+       /* const updatedTodo = response.json().data;
         const updatedTodos = this.todos.map(
           (temp) => {
             if (updatedTodo._id !== temp._id) {
@@ -60,7 +91,18 @@ export class TodoListComponent implements OnInit {
             return  updatedTodo;
           });
 
-        this.todos = updatedTodos;
+        this.todos = updatedTodos;*/
+      }
+    );
+  }
+
+  deleteTodo(todo: Todo) {
+    this.todoService.deleteTodo(todo._id).subscribe(
+      (response) => {
+        const responseJson = response.json();
+        this.apiMessage = responseJson.message;
+        console.log(this.apiMessage);
+        this.getTodos();
       }
     );
   }
